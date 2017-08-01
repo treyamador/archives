@@ -88,6 +88,7 @@ def get_field(soup,field_name):
         return None
 
 
+
 def init_journal(title,site,pay,circ,solic,fee):
 
     def stringify(var):
@@ -128,20 +129,12 @@ def get_entry_attr():
 
 
 
-def write_html(soup,ext=''):
-    with open('html'+str(ext)+'.txt','wb') as f_obj:
-        try:
-            html = u''+soup.get_text()+'\r\n'
-            f_obj.write(html.encode('utf-8'))
-        except (AttributeError, TypeError, ValueError):
-            pass
-
-
-
 def write_journals(journals,keys,filename):
     with open(filename,'wb') as f_obj:
         for journal in journals:
-            for key in keys:
+            title = u''+journal[keys[0]]+'\r\n'
+            f_obj.write(title.encode('utf-8'))
+            for key in keys[1:]:
                 try:
                     entry = u''+key+': '+journal[key]+'\r\n'
                     f_obj.write(entry.encode('utf-8'))
@@ -161,8 +154,6 @@ def write_filtered_journals(journals,keys,filename):
         'Greater than 10,000'
     ]
 
-    print(journals)
-
     with open(filename,'wb') as f_obj:
         for category in circu_categ:
             if category in journals:
@@ -170,7 +161,9 @@ def write_filtered_journals(journals,keys,filename):
                 category_title = u''+category+'\r\n\r\n'
                 f_obj.write(category_title.encode('utf-8'))
                 for journal in entries:
-                    for key in keys:
+                    title = u'    '+journal[keys[0]]+'\r\n'
+                    f_obj.write(title.encode('utf-8'))
+                    for key in keys[1:]:
                         try:
                             entry = u'    '+key+': '+journal[key]+'\r\n'
                             f_obj.write(entry.encode('utf-8'))
@@ -196,32 +189,23 @@ def journal_info(url):
 def filter_journals(journals):
     filtered = {}
     for journal in journals:
-        print_journal(journal)
-        if 'Cash' in journal['payment'] and 'Yes' in journal['unsolicited']:
-            if journal['circulation'] != ' ':
-                if 'circulation' not in filtered:
-                    filtered[journal['circulation']] = []
-                filtered[journal['circulation']].append(journal)
+        if 'Cash' in journal['payment'] and 'Yes' in journal['unsolicited'] and journal['circulation'] != ' ':
+            if journal['circulation'] not in filtered:
+                filtered[journal['circulation']] = []
+            filtered[journal['circulation']].append(journal)
     return filtered
 
 
 
-def sort_circulation_journals(journals):
-    pass
-
-
-
 def scrape(url):
-
     journals = []
     keys = get_entry_attr()
     soup,res = connect(url)
     links = gather_journal_links(soup,url)
-    for link in links[103:105]:
+    for link in links:
         journals.append(journal_info(link))
     write_journals(journals,keys,'all_journals.txt')
     filtered = filter_journals(journals)
-    #write_journals(filtered,keys,'filtered_journals.txt')
     write_filtered_journals(filtered,keys,'filtered_journals.txt')
 
 
