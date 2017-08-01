@@ -101,9 +101,25 @@ class Journal:
 
     def stringify(self,var):
         if var is None:
+            return '*'
+        return var
+
+
+def init_journal(title,site,pay,circ,solic,fee):
+
+    def stringify(var):
+        if var is None:
             return ''
         return var
 
+    return {
+        'title':stringify(title),
+        'website':stringify(site),
+        'payment':stringify(pay),
+        'circulation':stringify(circ),
+        'unsolicited':stringify(solic),
+        'fee':stringify(fee)
+    }
 
 
 def journal_info(url):
@@ -114,21 +130,22 @@ def journal_info(url):
     circulation = get_field(soup,'field-name-field-circulation')
     unsolicited = get_field(soup,'field-name-field-unsolicited-submissions')
     fee = get_field(soup,'field-name-field-reading-fee')
-    return Journal(title,website,payment,circulation,unsolicited,fee)
+    #return Journal(title,website,payment,circulation,unsolicited,fee)
+    return init_journal(title,website,payment,circulation,unsolicited,fee)
 
 
 
 def scrape(url):
     soup,res = connect(url)
     links = gather_journal_links(soup,url)
-    for link in links[150:155]:
+    for link in links[100:105]:
         journal = journal_info(link)
-        print('Title:',journal.title)
-        print('Website:',journal.website)
-        print('Circulation:',journal.circulation)
-        print('Payment:',journal.payment)
-        print('Unsolicited:',journal.unsolicited)
-        print('Fee:',journal.fee)
+        print('Title:',journal['title'])
+        print('Website:',journal['website'])
+        print('Circulation:',journal['circulation'])
+        print('Payment:',journal['payment'])
+        print('Unsolicited:',journal['unsolicited'])
+        print('Fee:',journal['fee'])
         print('\n')
 
 
