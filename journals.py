@@ -197,6 +197,34 @@ def filter_journals(journals):
 
 
 
+def query_all_competitions(journals):
+    keywords = ['contest','competition','prize','award']
+    competitions = []
+    for journal in journals:
+        try:
+            soup,res = connect(journal['website'])
+            text = soup.get_text(' ')            
+        except (AttributeError,TypeError,ValueError):
+            pass
+        else:
+            if has_competition(text,keywords):
+                competitions.append(journal)
+    return competitions
+
+
+
+def has_competition(text,keywords):
+    try:
+        test_text = text.lower()
+        for keyword in keywords:
+            if keyword in test_text:
+                return True
+    except (AttributeError,TypeError,ValueError):
+        pass
+    return False
+
+
+
 def scrape(url):
     journals = []
     keys = get_entry_attr()
@@ -204,9 +232,12 @@ def scrape(url):
     links = gather_journal_links(soup,url)
     for link in links:
         journals.append(journal_info(link))
+
     write_journals(journals,keys,'all_journals.txt')
     filtered = filter_journals(journals)
     write_filtered_journals(filtered,keys,'filtered_journals.txt')
+    competitions = query_all_competitions(journals)
+    write_journals(competitions,keys,'competitions.txt')
 
 
 
@@ -218,6 +249,7 @@ def driver():
         '&simsubs=All&items_per_page=All'
 
     scrape(lit_url)
+
 
 
 driver()
